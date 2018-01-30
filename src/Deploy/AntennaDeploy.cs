@@ -70,15 +70,15 @@
         if (isTransmitting && isConsuming && !isAnimation)
         {
           if (Features.Signal) actualECCost = antenna.cost;
-          else if (Features.KCommNet)
-          {
-            NetworkAdaptor adap = part.FindModuleImplementing<NetworkAdaptor>();
-            if (adap != null)
-            {
-              actualECCost = adap.ecCost;
-            }
-            else actualECCost = 0;
-          }
+          //else if (Features.KCommNet)
+          //{
+          //  NetworkAdaptor adap = part.FindModuleImplementing<NetworkAdaptor>();
+          //  if (adap != null)
+          //  {
+          //    actualECCost = adap.ecCost;
+          //  }
+          //  else actualECCost = 0;
+          //}
           // Kerbalism already has logic to consume EC when it is transmitting
           isConsuming = false;
         }
