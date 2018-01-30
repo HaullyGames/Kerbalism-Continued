@@ -104,7 +104,6 @@ namespace KERBALISM
           case MonitorPage.telemetry: panel.Telemetry_Life(selected_v); break;
           case MonitorPage.data: panel.FileMan(selected_v); break;
           case MonitorPage.scripts: panel.DevMan(selected_v); break;
-          case MonitorPage.net: panel.NetMan(selected_v); break;
           case MonitorPage.config: panel.Config(selected_v); break;
         }
       }
@@ -238,14 +237,6 @@ namespace KERBALISM
         if (Lib.IsClicked()) page = MonitorPage.scripts;
         else if (Lib.IsClicked(2)) UI.Open((p) => p.DevMan(v));
       }
-
-      if (Features.KCommNet)
-      { 
-        GUILayout.Label(new GUIContent(page == MonitorPage.net ? " <color=#00ffff>NET</color> " : " NET ", Icons.network, "Network - Frequency Configure" + tooltip), config_style);
-        if (Lib.IsClicked()) page = MonitorPage.net;
-        else if (Lib.IsClicked(2)) UI.Open((p) => p.NetMan(v));
-      }
-
       GUILayout.Label(new GUIContent(page == MonitorPage.config ? " <color=#00ffff>CFG</color> " : " CFG ", Icons.small_config, "Configure the vessel" + tooltip), config_style);
       if (Lib.IsClicked()) page = MonitorPage.config;
       else if (Lib.IsClicked(2)) UI.Open((p) => p.Config(v));

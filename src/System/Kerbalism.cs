@@ -88,7 +88,6 @@ namespace KERBALISM
 
       // evict oldest entry from vessel cache
       Cache.Update();
-      if (Features.KCommNet) KCommNetScenario.CacheCommNetVessels();
 
       // store info for oldest unloaded vessel
       double last_time = 0.0;
@@ -130,9 +129,6 @@ namespace KERBALISM
 
         // get resource cache
         Vessel_Resources resources = ResourceCache.Get(v);
-
-        // call antenna update trigger
-        Cache.AntennaUpdate(v);
 
         // if loaded
         if (v.loaded)

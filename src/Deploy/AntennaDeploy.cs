@@ -3,19 +3,18 @@
   // This class will support two signal system (Kerbalism Signal & CommNet)
   public class AntennaDeploy : DeployBase
   {
-    // This module is always exist in part that has Antenna Or ModuleDataTransmitter
+    [KSPField(isPersistant = true)]
+    double rightDistValue;              // Needs to support CommNet
+
+    // This module will always exist in part that has Antenna or ModuleDataTransmitter module
     Antenna antenna;
     ModuleAnimationGroup customAnim;
 
     ModuleDataTransmitter transmitter;
     ModuleDeployableAntenna stockAnim;
 
-    [KSPField(isPersistant = true)] double rightDistValue;     // Needs to support CommNet
-
-    // Extra condition to IsConsuming
-    bool isTransmitting;
-    // isAnimation (Extending/Retracting)
-    bool isAnimation;
+    bool isTransmitting;                // Extra condition to IsConsuming
+    bool isAnimation;                   // isAnimation (Extending/Retracting)
 
     public override void OnStart(StartState state)
     {

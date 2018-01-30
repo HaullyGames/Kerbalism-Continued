@@ -16,12 +16,10 @@ namespace KERBALISM
     public bool isActionGroupchanged;                                         // actionGroup was changed by DeploySystem?
 
     public PartModule pModule;
-    public string Action;
+    //public string Action;
 
     public bool hasEC;                                                        // Check if vessel has EC to consume, otherwise will disable animations and functions of the part.
-
     public bool isConsuming;
-
     public Resource_Info resourceInfo;
 
     public override void OnStart(StartState state)

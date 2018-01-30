@@ -83,17 +83,8 @@ namespace KERBALISM
       critical = Reliability.HasCriticalFailure(v);
 
       // signal info
-      if (Features.KCommNet)
-      {
-        antenna = Cache.AntennaInfo(v);
-        avoid_inf_recursion.Add(v.id);
-      }
-      else
-      {
-        kAntenna = new KAntennaInfo(v);
-        avoid_inf_recursion.Add(v.id);
-      }
-      // TODO: Need to create a Signal integrated with CommNet
+      kAntenna = new KAntennaInfo(v);
+      avoid_inf_recursion.Add(v.id);
       connection = Signal.Connection(v, position, kAntenna, blackout, avoid_inf_recursion);
       transmitting = Science.Transmitting(v, connection.linked);
       relaying = Signal.Relaying(v, avoid_inf_recursion);
@@ -147,7 +138,6 @@ namespace KERBALISM
     public bool malfunction;                      // true if at least a component has malfunctioned or had a critical failure
     public bool critical;                         // true if at least a component had a critical failure
     public KAntennaInfo kAntenna;                 // kerbalism antenna info
-    public Antenna_Info antenna;                   // CommNet antenna info
     public ConnectionInfo connection;             // connection info
     public string transmitting;                   // name of file being transmitted, or empty
     public string relaying;                       // name of file being relayed, or empty

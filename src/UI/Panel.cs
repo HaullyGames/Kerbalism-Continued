@@ -143,21 +143,12 @@ namespace KERBALISM
           if (e.click != null && Lib.IsClicked()) callbacks.Add(e.click);
           if (e.hover != null && Lib.IsHover()) callbacks.Add(e.hover);
 
-          bool isFreqAdded = false;
-
           for (int i = 0; i < e.icons.Count; i++)
           {
             Icon icon = e.icons[i];
 
-            GUILayout.Label(new GUIContent(icon.texture, icon.tooltip), isFreqSelector ? Styles.left_icon : Styles.right_icon);
+            GUILayout.Label(new GUIContent(icon.texture, icon.tooltip), Styles.right_icon);
             if (icon.click != null && Lib.IsClicked()) callbacks.Add(icon.click);
-
-            // TODO : I added isFreqSelector in all logical of this class
-            if (isFreqSelector && e.icons.Count == 2 && !isFreqAdded)
-            {
-              GUILayout.Label(new GUIContent(e.freq.ToString(), ""), Styles.frequency);
-              isFreqAdded = true;
-            }
           }
           GUILayout.EndHorizontal();
         }
@@ -235,8 +226,6 @@ namespace KERBALISM
     // - width never shrink
     public void Width(float w) => min_width = Math.Max(w, min_width);
 
-    public void Set_IsFreqSelector(bool i) => isFreqSelector = i;
-
     // get medata
     public string Title() => win_title;
     public float Width() => min_width;
@@ -281,8 +270,6 @@ namespace KERBALISM
     List<Action> callbacks;   // functions to call on input events
     string win_title;         // metadata stored in panel
     float min_width;          // metadata stored in panel
-
-    bool isFreqSelector;      // Is freqSelector?
     List<ushort> frequency;
   }
 }

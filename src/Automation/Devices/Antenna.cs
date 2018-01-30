@@ -61,7 +61,6 @@
       {
         if (stockAnim.deployState != ModuleDeployablePart.DeployState.EXTENDED && value) stockAnim.Extend();
         else if (stockAnim.deployState == ModuleDeployablePart.DeployState.EXTENDED && !value) stockAnim.Retract();
-        Cache.AntennaUpdate(transmitter.part.vessel, true);
       }
       else
       {
@@ -152,7 +151,6 @@
           string status = value ? "EXTENDED" : "RETRACTED";
           Lib.Proto.Set(antenna, "canComm", value);
           Lib.Proto.Set(animator, "deployState", status);
-          Cache.AntennaUpdate(vessel, true);
         }
         else
         {

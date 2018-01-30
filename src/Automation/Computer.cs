@@ -66,11 +66,10 @@ namespace KERBALISM
       if (ec.amount <= double.Epsilon) return;
 
       // get the script
-      Script script;
-      if (scripts.TryGetValue(type, out script))
+      if (scripts.TryGetValue(type, out Script script))
       {
         // execute the script
-        script.Execute( Boot(v) );
+        script.Execute(Boot(v));
 
         // show message to the user
         // - unless the script is empty (can happen when being edited)
