@@ -6,7 +6,7 @@
     {
       this.antenna = antenna;
       animator = antenna.part.FindModuleImplementing<ModuleAnimationGroup>();
-      if (!Features.Deploy) has_ec = true;
+      if (!Features.AdvancedEC) has_ec = true;
       else has_ec = ResourceCache.Info(antenna.part.vessel, "ElectricCharge").amount > double.Epsilon;
     }
 
@@ -14,7 +14,7 @@
     {
       this.transmitter = transmitter;
       stockAnim = this.transmitter.part.FindModuleImplementing<ModuleDeployableAntenna>();
-      if (!Features.Deploy) has_ec = true;
+      if (!Features.AdvancedEC) has_ec = true;
       has_ec = ResourceCache.Info(transmitter.part.vessel, "ElectricCharge").amount > double.Epsilon;
     }
 
@@ -31,7 +31,7 @@
 
     public override string Info()
     {
-      if (Features.Deploy)
+      if (Features.AdvancedEC)
       {
         return !has_ec
           ? "<color=orange>inactive</color>"
@@ -93,7 +93,7 @@
   {
     public ProtoAntennaDevice(ProtoPartModuleSnapshot antenna, uint part_id, Vessel v)
     {
-      if (!Features.Deploy) has_ec = true;
+      if (!Features.AdvancedEC) has_ec = true;
       else has_ec = ResourceCache.Info(v, "ElectricCharge").amount > double.Epsilon;
 
       if (Features.KCommNet)
@@ -122,7 +122,7 @@
 
     public override string Info()
     {
-      if (Features.Deploy)
+      if (Features.AdvancedEC)
       {
         return !has_ec
            ? "<color=orange>inactive</color>"

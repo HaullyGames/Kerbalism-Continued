@@ -180,6 +180,8 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>"$(ProjectDir)\..\misc\KSPTools\pdb2mdb.exe" "$(TargetPath)"
+del "$(TargetDir)Kerbalism Continued.pdb"
+move "$(TargetDir)Kerbalism Continued.dll.mdb" "$(TargetDir)Debug\"
 xcopy /b/v/y/s "$(TargetDir)*" "C:\Temp\Kerbal Space Program\GameData\Kerbalism"</PostBuildEvent>
   </PropertyGroup>
 </Project>

@@ -54,6 +54,7 @@
         // consume ec if data is transmitted or relayed
         isTransmitting = (vi.transmitting.Length > 0 || vi.relaying.Length > 0);
       }
+      else isTransmitting = false;
 
       if (lastECstate != hasEC)
       {
@@ -61,15 +62,12 @@
         if (!isConsuming) actualECCost = 0;
       }
 
+      // If is transmitting, Kerbalism will EC in Science class.
       if (isTransmitting && isConsuming && !isPlaying)
       {
+        // Just get EC to update display
         if (Features.Signal) actualECCost = antenna.cost;
-        else if (Features.KCommNet)
-        {
-          // TODO: replace to KCommNet module
-          actualECCost = antennaAdvEC.ecCost;
-        }
-        // Kerbalism already has logic to consume EC when it is transmitting
+        else if (Features.KCommNet) actualECCost = antennaAdvEC.ecCost;   // TODO: replace to KCommNet module
         isConsuming = false;
       }
     }
@@ -207,11 +205,11 @@
     AdvancedAntennaEC antennaAdvEC;
 
     // Logical
-    bool hasEC;           // Vessel has EC
-    bool isConsuming;     // Device is consuming EC
-    bool isTransmitting;  // Antenna is transmitting
-    bool isPlaying;       // Animation is playing?
-    bool lastECstate;     // Apply the update only if the state has changed
+    public bool isConsuming;      // Device is consuming EC
+    bool hasEC;                   // Vessel has EC
+    bool isTransmitting;          // Antenna is transmitting
+    bool isPlaying;               // Animation is playing?
+    bool lastECstate;             // Apply the update only if the state has changed
 
     // Auxiliary
     Vessel_Info vi;

@@ -25,7 +25,7 @@ namespace KERBALISM
     public override void OnStart(StartState state)
     {
       //Fix the actionGroup when Deploy is disable
-      if (!Features.Deploy && isActionGroupchanged)
+      if (!Features.AdvancedEC && isActionGroupchanged)
       {
         foreach (BaseAction ac in pModule.Actions)
         {
@@ -37,7 +37,7 @@ namespace KERBALISM
 
     public virtual void Update()
     {
-      if (Lib.IsFlight() && Features.Deploy)
+      if (Lib.IsFlight() && Features.AdvancedEC)
       {
         // get ec resource handler
         resourceInfo = ResourceCache.Info(vessel, "ElectricCharge");
@@ -50,7 +50,7 @@ namespace KERBALISM
 
     public virtual void FixedUpdate()
     {
-      if (Lib.IsFlight() && Features.Deploy)
+      if (Lib.IsFlight() && Features.AdvancedEC)
       {
         if (isConsuming)
         {

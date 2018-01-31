@@ -20,7 +20,7 @@
       Reliability             = Lib.ConfigValue(cfg, "Reliability",         false);
       Signal                  = Lib.ConfigValue(cfg, "Signal",              false);
       KCommNet                = Lib.ConfigValue(cfg, "KCommNet",            false);
-      Deploy                  = Lib.ConfigValue(cfg, "Deploy",              false);
+      AdvancedEC              = Lib.ConfigValue(cfg, "AdvancedEC",          false);
       Science                 = Lib.ConfigValue(cfg, "Science",             false);
       SpaceWeather            = Lib.ConfigValue(cfg, "SpaceWeather",        false);
       Automation              = Lib.ConfigValue(cfg, "Automation",          false);
@@ -87,7 +87,7 @@
     public static bool Reliability;                 // component malfunctions and critical failures
     public static bool Signal;                      // communications using low-gain and high-gain antennas
     public static bool KCommNet;                    // CommNet(100% integrated) with Kerbalism
-    public static bool Deploy;                      // add ecCost to keep Antenna working, add ecCost to Extend\Retract parts
+    public static bool AdvancedEC;                  // add ecCost to keep Antenna working, add ecCost to Extend\Retract parts
     public static bool Science;                     // science data storage, transmission and analysis
     public static bool SpaceWeather;                // coronal mass ejections
     public static bool Automation;                  // control vessel components using scripts

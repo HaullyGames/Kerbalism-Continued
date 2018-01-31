@@ -28,7 +28,7 @@ namespace KERBALISM
       if (Features.Reliability)   Inject(root, "Feature", "Reliability");
       if (Features.Signal)        Inject(root, "Feature", "Signal");
       if (Features.KCommNet)      Inject(root, "Feature", "KCommNet");
-      if (Features.Deploy)        Inject(root, "Feature", "Deploy");
+      if (Features.AdvancedEC)    Inject(root, "Feature", "AdvancedEC");
       if (Features.SpaceWeather)  Inject(root, "Feature", "SpaceWeather");
       if (Features.Automation)    Inject(root, "Feature", "Automation");
       if (Features.Science)       Inject(root, "Feature", "Science");

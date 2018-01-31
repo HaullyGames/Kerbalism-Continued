@@ -18,6 +18,10 @@
 
     public override void OnStart(StartState state)
     {
+      // don't break tutorial scenarios
+      if (Lib.DisableScenario(this)) return;
+
+      // do nothing in the editors and when compiling parts
       if (!Lib.IsFlight()) return;
 
       // Kerbalism modules
@@ -51,7 +55,7 @@
 
     public override void Update()
     {
-      if (Lib.IsFlight() && Features.Deploy)
+      if (Lib.IsFlight() && Features.AdvancedEC)
       {
         // Check if it is transmitting
         if (!Features.Science && Features.Signal)
@@ -211,7 +215,7 @@
 
     public static void BackgroundUpdate(Vessel v, ProtoPartSnapshot p, ProtoPartModuleSnapshot antenna, Vessel_Info vi, Resource_Info ec, double elapsed_s)
     {
-      if (Features.Deploy)
+      if (Features.AdvancedEC)
       {
         bool isDeploy;
         bool has_ec = ec.amount > double.Epsilon;

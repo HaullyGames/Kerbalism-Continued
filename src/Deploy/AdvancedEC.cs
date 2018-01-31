@@ -1,96 +1,118 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
+// This class is a Reliability modified.
 namespace KERBALISM
 {
-  public class AdvancedEC
+  public sealed class AdvancedEC : PartModule
   {
-    // return set of devices on a vessel
-    // - the list is only valid for a single simulation step
-    public static Dictionary<uint, ECDevice> Boot(Vessel v)
+    [KSPField(isPersistant = true)] public string type;                         // component name
+    [KSPField(isPersistant = true)] public double extra_Cost = 0;               // extra energy cost to keep the part active
+    [KSPField(isPersistant = true)] public double extra_Deploy = 0;             // extra eergy cost to do a deploy(animation)
+
+    [KSPField(guiName = "EC Usage", guiUnits = "/sec", guiActive = false, guiFormat = "F2")]
+    public double actualCost = 0;                                               // Show Energy Consume
+    List<PartModule> modules;                                                   // components cache
+
+    bool hasEnergy;                                                             // Check if vessel has energy, otherwise will disable animations and functions
+    bool isConsuming;                                                           // Inform if module is consuming energy
+    Resource_Info resources;                                                 // Vessel resources
+
+    public override void OnStart(StartState state)
     {
-      // get vessel info
-      Vessel_Info vi = Cache.VesselInfo(v);
+      // don't break tutorial scenarios
+      if (Lib.DisableScenario(this)) return;
 
-      // get resource handler
-      Vessel_Resources resources = ResourceCache.Get(v);
-      Resource_Info ec = resources.Info(v, "ElectricCharge");
+      // do nothing in the editors and when compiling part or when advanced EC is not enabled
+      if (!Lib.IsFlight() || !Features.AdvancedEC) return;
 
-      // store all devices
-      var devices = new Dictionary<uint, ECDevice>();
+      // cache list of modules
+      modules = part.FindModulesImplementing<PartModule>().FindAll(k => k.moduleName == type);
 
-      // store device being added
-      ECDevice dev;
+      // setup UI
+      Fields["actualCost"].guiActive = true;
 
-      // loaded vessel
-      if (v.loaded)
+      // get energy from cache
+      resources = ResourceCache.Info(vessel, "ElectricCharge");
+      hasEnergy = resources.amount > double.Epsilon;
+
+      // sync monobehaviour state with module state
+      // - required as the monobehaviour state is not serialized
+      if (!hasEnergy)
       {
-        foreach (PartModule m in Lib.FindModules<PartModule>(v))
+        foreach (PartModule m in modules)
         {
-          switch (m.moduleName)
-          {
-            case "Antenna":                 dev = new AntennaEC(m as Antenna, vi, ec);                  break;
-            case "ModuleDataTransmitter":   dev = new AntennaEC(m as ModuleDataTransmitter, vi, ec);    break;
-            default: continue;
-          }
-
-          // add the device
-          // - multiple same-type components in the same part will have the same id, and are ignored
-          if (!devices.ContainsKey(dev.Id()))
-          {
-            devices.Add(dev.Id(), dev);
-          }
-        }
-      }
-      // unloaded vessel
-      else
-      {
-        // store data required to support multiple modules of same type in a part
-        var PD = new Dictionary<string, Lib.module_prefab_data>();
-
-        // for each part
-        foreach (ProtoPartSnapshot p in v.protoVessel.protoPartSnapshots)
-        {
-          // get part prefab (required for module properties)
-          Part part_prefab = PartLoader.getPartInfoByName(p.partName).partPrefab;
-
-          // get all module prefabs
-          var module_prefabs = part_prefab.FindModulesImplementing<PartModule>();
-
-          // clear module indexes
-          PD.Clear();
-
-          // for each module
-          foreach (ProtoPartModuleSnapshot m in p.modules)
-          {
-            // get the module prefab
-            // if the prefab doesn't contain this module, skip it
-            PartModule module_prefab = Lib.ModulePrefab(module_prefabs, m.moduleName, PD);
-            if (!module_prefab) continue;
-
-            // if the module is disabled, skip it
-            // note: this must be done after ModulePrefab is called, so that indexes are right
-            if (!Lib.Proto.GetBool(m, "isEnabled")) continue;
-
-            // depending on module name
-            switch (m.moduleName)
-            {
-              case "Antenna":               dev = new ProtoAntennaDevice(m, p.flightID, v); break;
-              case "ModuleDataTransmitter": dev = new ProtoAntennaDevice(m, p.flightID, v); break;
-              default: continue;
-            }
-
-            // add the device
-            // - multiple same-type components in the same part will have the same id, and are ignored
-            if (!devices.ContainsKey(dev.Id()))
-            {
-              devices.Add(dev.Id(), dev);
-            }
-          }
+          m.enabled = false;
         }
       }
 
-      // return all devices found
-      return devices;
+      // type-specific hacks
+      if (!hasEnergy) Apply(true);
+    }
+
+    public void Update()
+    {
+      if (Lib.IsFlight() && Features.AdvancedEC)
+      {
+        // get energy from cache
+        resources = ResourceCache.Info(vessel, "ElectricCharge");
+        hasEnergy = resources.amount > double.Epsilon;
+
+        // enforce state
+        // - required as things like Configure or AnimationGroup can re-enable broken modules
+        foreach (PartModule m in modules)
+        {
+          m.enabled = hasEnergy;
+          m.isEnabled = hasEnergy;
+        }
+        if(!hasEnergy) actualCost = 0;
+        // TODO: Implement update Interface for each module
+        // update ui
+      }
+    }
+
+    public void FixedUpdate()
+    {
+      // do nothing in the editor
+      if (Lib.IsEditor()) return;
+
+      // If has energym and isConsuming
+      if (hasEnergy && isConsuming)
+      {
+        if (resources != null) resources.Consume(actualCost * Kerbalism.elapsed_s);
+      }
+    }
+
+    // apply type-specific hacks to enable/disable the module
+    void Apply(bool b)
+    {
+      switch (type)
+      {
+        case "Antenna":
+          if(b)
+          {
+            Lib.Debug("Testing the new AdvancedEC module!");
+          }
+          break;
+
+        case "ModuleLight":
+          if (b)
+          {
+            foreach (PartModule m in modules)
+            {
+              ModuleLight light = m as ModuleLight;
+              if (light.animationName.Length > 0)
+              {
+                new Animator(part, light.animationName).Still(0.0f);
+              }
+              else
+              {
+                part.FindModelComponents<Light>().ForEach(k => k.enabled = false);
+              }
+            }
+          }
+          break;
+      }
     }
   }
 }

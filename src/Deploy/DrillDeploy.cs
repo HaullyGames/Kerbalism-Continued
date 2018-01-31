@@ -19,7 +19,7 @@
 
     public override void Update()
     {
-      if (Lib.IsFlight() && Features.Deploy)
+      if (Lib.IsFlight() && Features.AdvancedEC)
       {
         base.Update();
         if (harvester.running)
