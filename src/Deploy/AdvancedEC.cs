@@ -15,8 +15,18 @@ namespace KERBALISM
     List<PartModule> modules;                               // components cache
 
     bool hasEnergy;                                         // Check if vessel has energy, otherwise will disable animations and functions
-    bool isConsuming;
+    bool isConsuming;                                       // Device is consuming energy
+    
+    bool isInitialized;                                     // 
+    bool hasEnergyChanged;                                  //
+
+    KeyValuePair<bool, double> modReturn;                   // Return from ECDevice
     Resource_Info resources;                                // Vessel resources
+
+    // Exclusive properties to special cases
+    // CommNet Antennas
+    [KSPField(isPersistant = true)] public double antennaPower;   // CommNet don't ignore ModuleDataTransmitter disabled, this way I have to set power to 0 to disable it.
+
 
     public override void OnStart(StartState state)
     {
@@ -47,7 +57,7 @@ namespace KERBALISM
       }
 
       // type-specific hacks
-      if (!hasEnergy) Apply(true);
+      if (!hasEnergy) UI_Update(true);
     }
 
     public void Update()
@@ -59,25 +69,37 @@ namespace KERBALISM
         hasEnergy = resources.amount > double.Epsilon;
 
         // enforce state
-        // - required as things like Configure or AnimationGroup can re-enable broken modules
         foreach (PartModule m in modules)
         {
           m.enabled = hasEnergy;
           m.isEnabled = hasEnergy;
         }
+
+        // UI update only if hasEnergy has changed or if is the first time
+        if (!isInitialized)
+        {
+          Lib.Debug("Initialize");
+          hasEnergyChanged = hasEnergy;
+          UI_Update(hasEnergy);
+          antennaPower = new AntennaEC(part.FindModuleImplementing<ModuleDataTransmitter>(), extra_Cost, extra_Deploy, antennaPower).Init(antennaPower);
+          isInitialized = true;
+        }
+        else if(hasEnergyChanged != hasEnergy)
+        {
+          Lib.Debug("Energy state has changed: {0}", hasEnergy);
+          hasEnergyChanged = hasEnergy;
+          UI_Update(hasEnergy);
+        }
+        
         if (!hasEnergy)
         {
           actualCost = 0;
           isConsuming = false;
-          Apply(true);
         }
         else
         {
-          isConsuming = GetIsConsuming(true);
+          isConsuming = GetIsConsuming();
         }
-        
-        // TODO: Implement update Interface for each module
-        // update ui
       }
     }
 
@@ -86,6 +108,12 @@ namespace KERBALISM
       // do nothing in the editor
       if (Lib.IsEditor()) return;
 
+      if (hasEnergyChanged != hasEnergy)
+      {
+        FixModule(hasEnergy);
+        hasEnergyChanged = hasEnergy;
+      }
+
       // If has energym and isConsuming
       if (isConsuming)
       {
@@ -93,45 +121,39 @@ namespace KERBALISM
       }
     }
 
-    public bool GetIsConsuming(bool b)
+    public bool GetIsConsuming()
     {
-      KeyValuePair<bool, double> modReturn;
-      if (b)
+      switch (type)
       {
-        switch (type)
-        {
-          case "Antenna":
-            ModuleDataTransmitter x = part.FindModuleImplementing<ModuleDataTransmitter>();
-            modReturn = new AntennaEC(x, extra_Cost, extra_Deploy).GetConsume();
-            actualCost = modReturn.Value;
-            return modReturn.Key;
-        }
+        case "Antenna":
+          ModuleDataTransmitter x = part.FindModuleImplementing<ModuleDataTransmitter>();
+          modReturn = new AntennaEC(x, extra_Cost, extra_Deploy, antennaPower).GetConsume();
+          actualCost = modReturn.Value;
+          return modReturn.Key;
       }
       actualCost = extra_Deploy;
       return true;
     }
 
     // apply type-specific hacks to enable/disable the module
-    void Apply(bool b)
+    void UI_Update(bool b)
     {
       switch (type)
       {
-        case "ModuleLight":
-          if (b)
-          {
-            foreach (PartModule m in modules)
-            {
-              ModuleLight light = m as ModuleLight;
-              if (light.animationName.Length > 0)
-              {
-                new Animator(part, light.animationName).Still(0.0f);
-              }
-              else
-              {
-                part.FindModelComponents<Light>().ForEach(k => k.enabled = false);
-              }
-            }
-          }
+        case "Antenna":
+          ModuleDataTransmitter x = part.FindModuleImplementing<ModuleDataTransmitter>();
+          new AntennaEC(x, extra_Cost, extra_Deploy, antennaPower).UI_Update(b);
+          break;
+      }
+    }
+
+    void FixModule(bool b)
+    {
+      switch (type)
+      {
+        case "Antenna":
+          ModuleDataTransmitter x = part.FindModuleImplementing<ModuleDataTransmitter>();
+          new AntennaEC(x, extra_Cost, extra_Deploy, antennaPower).FixCommNetAntenna(b);
           break;
       }
     }

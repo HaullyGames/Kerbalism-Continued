@@ -12,12 +12,18 @@ namespace KERBALISM
       animator = antenna.part.FindModuleImplementing<ModuleAnimationGroup>();
     }
 
-    public AntennaEC(ModuleDataTransmitter antenna, double extra_Cost, double extra_Deploy)
+    public AntennaEC(ModuleDataTransmitter antenna, double extra_Cost, double extra_Deploy, double antennaPower)
     {
       transmitter = antenna;
       this.extra_Cost = extra_Cost;
       this.extra_Deploy = extra_Deploy;
+      this.antennaPower = antennaPower;
       stockAnim = antenna.part.FindModuleImplementing<ModuleDeployableAntenna>();
+    }
+
+    public double Init(double currentPower)
+    {
+      return (currentPower != transmitter.antennaPower && transmitter.antennaPower > 0 ? transmitter.antennaPower : currentPower);
     }
 
     public override KeyValuePair<bool, double> GetConsume()
@@ -38,7 +44,7 @@ namespace KERBALISM
               actualCost = extra_Deploy;
               return true;
             }
-            else if (animator.isDeployed || (Settings.UnlinkedControl == UnlinkedCtrl.none))
+            else if (animator.isDeployed || (Settings.ExtendedAntenna == false))
             {
               actualCost = extra_Cost;
               return true;
@@ -60,7 +66,7 @@ namespace KERBALISM
               actualCost = extra_Deploy;
               return true;
             }
-            else if (stockAnim.deployState == ModuleDeployablePart.DeployState.EXTENDED || (Settings.UnlinkedControl == UnlinkedCtrl.none))
+            else if (stockAnim.deployState == ModuleDeployablePart.DeployState.EXTENDED || (Settings.ExtendedAntenna == false))
             {
               actualCost = extra_Cost;
               return true;
@@ -77,6 +83,106 @@ namespace KERBALISM
       }
     }
 
+    public override void UI_Update(bool hasEnergy)
+    {
+      if (Features.Signal)
+      {
+        if (hasEnergy)
+        {
+          if (animator != null)
+          {
+            if(animator.DeployAnimation.isPlaying)
+            {
+              animator.Events["RetractModule"].active = false;
+              animator.Events["DeployModule"].active = false;
+            }
+            else if (animator.isDeployed)
+            {
+              animator.Events["RetractModule"].active = true;
+              animator.Events["DeployModule"].active = false;
+            }
+            else
+            {
+              animator.Events["RetractModule"].active = false;
+              animator.Events["DeployModule"].active = true;
+            }
+          }
+        }
+        else
+        {
+          if (animator != null)
+          {
+            // Don't allow extending/retracting when has no ec
+            animator.Events["RetractModule"].active = false;
+            animator.Events["DeployModule"].active = false;
+          }
+        }
+      }
+      else if (Features.KCommNet)
+      {
+        if (hasEnergy)
+        {
+          if (stockAnim != null)
+          {
+            if (stockAnim.deployState == ModuleDeployablePart.DeployState.EXTENDED)
+            {
+              stockAnim.Events["Retract"].active = true;
+              stockAnim.Events["Extend"].active = false;
+            }
+            else if (stockAnim.deployState == ModuleDeployablePart.DeployState.RETRACTED)
+            {
+              stockAnim.Events["Retract"].active = false;
+              stockAnim.Events["Extend"].active = true;
+            }
+            else
+            {
+              stockAnim.Events["Retract"].active = false;
+              stockAnim.Events["Extend"].active = false;
+            }
+          }
+        }
+        else
+        {
+          if (stockAnim != null)
+          {
+            // Don't allow extending/retracting when has no ec
+            stockAnim.Events["Retract"].active = false;
+            stockAnim.Events["Extend"].active = false;
+          }
+        }
+      }
+    }
+
+    public void FixCommNetAntenna(bool hasEnergy)
+    {
+      double right;
+      if (Features.KCommNet)
+      {
+        // Save antennaPower
+        antennaPower = (antennaPower != transmitter.antennaPower && transmitter.antennaPower > 0 ? transmitter.antennaPower : antennaPower);
+        right = hasEnergy ? antennaPower : 0;
+
+        if (stockAnim != null)
+        {
+          if (stockAnim.deployState == ModuleDeployablePart.DeployState.EXTENDED)
+          {
+            // Recover antennaPower only if antenna is Extended
+            transmitter.antennaPower = right;
+          }
+          else
+          {
+            if (Settings.ExtendedAntenna) transmitter.antennaPower = right;
+            else transmitter.antennaPower = 0;
+          }
+        }
+        else
+        {
+          // Recover antennaPower for fixed antenna
+          transmitter.antennaPower = right;
+        }
+      }
+    }
+
     // Kerbalism Antenna
     Antenna antenna;
     ModuleAnimationGroup animator;
@@ -88,6 +194,7 @@ namespace KERBALISM
     // Logical
     double extra_Cost;
     double extra_Deploy;
+    double antennaPower;
 
     // Return
     double actualCost;
