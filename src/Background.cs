@@ -127,7 +127,7 @@ namespace KERBALISM {
             case Module_Type.FissionGenerator:      ProcessFissionGenerator(v, p, m, module_prefab, ec, elapsed_s);                             break;
             case Module_Type.RadioisotopeGenerator: ProcessRadioisotopeGenerator(v, p, m, module_prefab, ec, elapsed_s);                        break;
             case Module_Type.CryoTank:              ProcessCryoTank(v, p, m, module_prefab, resources, elapsed_s);                              break;
-            case Module_Type.AntennaDeploy:         AntennaDeploy.BackgroundUpdate(v, p, m, vi, ec, elapsed_s);                                 break;
+            //case Module_Type.AntennaDeploy:         AntennaDeploy.BackgroundUpdate(v, p, m, vi, ec, elapsed_s);                                 break;
           }
         }
       }
