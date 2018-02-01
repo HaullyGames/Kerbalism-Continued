@@ -50,7 +50,7 @@ namespace KERBALISM
     
     public override bool IsReady() { return true; }
 
-    public override string ProgressTitle() { return "Kerbalism"; }
+    public override string ProgressTitle() { return "Kerbalism-Continued"; }
 
     public override float ProgressFraction() { return 0f; }
 
@@ -67,7 +67,7 @@ namespace KERBALISM
     {
       // inject loader
       List<LoadingSystem> loaders = LoadingScreen.Instance.loaders;
-      GameObject go = new GameObject("Kerbalism");
+      GameObject go = new GameObject("Kerbalism-Continued");
       Loader loader = go.AddComponent<Loader>();
       int index = loaders.FindIndex(k => k is GameDatabase);
       loaders.Insert(index + 1, loader);

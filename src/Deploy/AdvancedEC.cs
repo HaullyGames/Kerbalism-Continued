@@ -6,17 +6,17 @@ namespace KERBALISM
 {
   public sealed class AdvancedEC : PartModule
   {
-    [KSPField(isPersistant = true)] public string type;                         // component name
-    [KSPField(isPersistant = true)] public double extra_Cost = 0;               // extra energy cost to keep the part active
-    [KSPField(isPersistant = true)] public double extra_Deploy = 0;             // extra eergy cost to do a deploy(animation)
+    [KSPField(isPersistant = true)] public string type;     // component name
+    [KSPField] public double extra_Cost = 0;                // extra energy cost to keep the part active
+    [KSPField] public double extra_Deploy = 0;              // extra eergy cost to do a deploy(animation)
 
-    [KSPField(guiName = "EC Usage", guiUnits = "/sec", guiActive = false, guiFormat = "F2")]
-    public double actualCost = 0;                                               // Show Energy Consume
-    List<PartModule> modules;                                                   // components cache
+    [KSPField(guiName = "EC Usage", guiUnits = "/sec", guiActive = false, guiFormat = "F3")]
+    public double actualCost = 0;                           // Show Energy Consume
+    List<PartModule> modules;                               // components cache
 
-    bool hasEnergy;                                                             // Check if vessel has energy, otherwise will disable animations and functions
-    bool isConsuming;                                                           // Inform if module is consuming energy
-    Resource_Info resources;                                                 // Vessel resources
+    bool hasEnergy;                                         // Check if vessel has energy, otherwise will disable animations and functions
+    bool isConsuming;
+    Resource_Info resources;                                // Vessel resources
 
     public override void OnStart(StartState state)
     {
@@ -65,7 +65,17 @@ namespace KERBALISM
           m.enabled = hasEnergy;
           m.isEnabled = hasEnergy;
         }
-        if(!hasEnergy) actualCost = 0;
+        if (!hasEnergy)
+        {
+          actualCost = 0;
+          isConsuming = false;
+          Apply(true);
+        }
+        else
+        {
+          isConsuming = GetIsConsuming(true);
+        }
+        
         // TODO: Implement update Interface for each module
         // update ui
       }
@@ -77,10 +87,28 @@ namespace KERBALISM
       if (Lib.IsEditor()) return;
 
       // If has energym and isConsuming
-      if (hasEnergy && isConsuming)
+      if (isConsuming)
       {
         if (resources != null) resources.Consume(actualCost * Kerbalism.elapsed_s);
       }
+    }
+
+    public bool GetIsConsuming(bool b)
+    {
+      KeyValuePair<bool, double> modReturn;
+      if (b)
+      {
+        switch (type)
+        {
+          case "Antenna":
+            ModuleDataTransmitter x = part.FindModuleImplementing<ModuleDataTransmitter>();
+            modReturn = new AntennaEC(x, extra_Cost, extra_Deploy).GetConsume();
+            actualCost = modReturn.Value;
+            return modReturn.Key;
+        }
+      }
+      actualCost = extra_Deploy;
+      return true;
     }
 
     // apply type-specific hacks to enable/disable the module
@@ -88,13 +116,6 @@ namespace KERBALISM
     {
       switch (type)
       {
-        case "Antenna":
-          if(b)
-          {
-            Lib.Debug("Testing the new AdvancedEC module!");
-          }
-          break;
-
         case "ModuleLight":
           if (b)
           {
