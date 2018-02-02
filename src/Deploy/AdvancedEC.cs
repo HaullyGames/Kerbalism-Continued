@@ -6,7 +6,7 @@ namespace KERBALISM
 {
   public sealed class AdvancedEC : PartModule
   {
-    [KSPField(isPersistant = true)] public string type;     // component name
+    [KSPField] public string type;                          // component name
     [KSPField] public double extra_Cost = 0;                // extra energy cost to keep the part active
     [KSPField] public double extra_Deploy = 0;              // extra eergy cost to do a deploy(animation)
 
@@ -55,9 +55,6 @@ namespace KERBALISM
           m.enabled = false;
         }
       }
-
-      // type-specific hacks
-      if (!hasEnergy) UI_Update(true);
     }
 
     public void Update()
@@ -68,29 +65,27 @@ namespace KERBALISM
         resources = ResourceCache.Info(vessel, "ElectricCharge");
         hasEnergy = resources.amount > double.Epsilon;
 
-        // enforce state
-        foreach (PartModule m in modules)
+        // UI update only if hasEnergy has changed or if is the first time
+        if(hasEnergyChanged != hasEnergy || !isInitialized)
         {
-          m.enabled = hasEnergy;
-          m.isEnabled = hasEnergy;
+          // UI
+          UI_Update(hasEnergy);
+
+          // enforce state
+          foreach (PartModule m in modules)
+          {
+            m.enabled = hasEnergy;
+            m.isEnabled = hasEnergy;
+          }
+
+          if (!isInitialized)
+          {
+            Lib.Debug("Initializing with hasEnergy = {0}", hasEnergy);
+            antennaPower = new AntennaEC(part.FindModuleImplementing<ModuleDataTransmitter>(), extra_Cost, extra_Deploy, antennaPower).Init(antennaPower);
+          }
+          Lib.Debug("Energy state has changed: {0}", hasEnergy);
         }
 
-        // UI update only if hasEnergy has changed or if is the first time
-        if (!isInitialized)
-        {
-          Lib.Debug("Initialize");
-          hasEnergyChanged = hasEnergy;
-          UI_Update(hasEnergy);
-          antennaPower = new AntennaEC(part.FindModuleImplementing<ModuleDataTransmitter>(), extra_Cost, extra_Deploy, antennaPower).Init(antennaPower);
-          isInitialized = true;
-        }
-        else if(hasEnergyChanged != hasEnergy)
-        {
-          Lib.Debug("Energy state has changed: {0}", hasEnergy);
-          hasEnergyChanged = hasEnergy;
-          UI_Update(hasEnergy);
-        }
-        
         if (!hasEnergy)
         {
           actualCost = 0;
@@ -108,10 +103,13 @@ namespace KERBALISM
       // do nothing in the editor
       if (Lib.IsEditor()) return;
 
-      if (hasEnergyChanged != hasEnergy)
+      if (hasEnergyChanged != hasEnergy || !isInitialized)
       {
+        Lib.Debug("Energy state has changed: {0}", hasEnergy);
         FixModule(hasEnergy);
+
         hasEnergyChanged = hasEnergy;
+        isInitialized = true;
       }
 
       // If has energym and isConsuming
@@ -125,7 +123,7 @@ namespace KERBALISM
     {
       switch (type)
       {
-        case "Antenna":
+        case "ModuleDataTransmitter":
           ModuleDataTransmitter x = part.FindModuleImplementing<ModuleDataTransmitter>();
           modReturn = new AntennaEC(x, extra_Cost, extra_Deploy, antennaPower).GetConsume();
           actualCost = modReturn.Value;
@@ -140,7 +138,7 @@ namespace KERBALISM
     {
       switch (type)
       {
-        case "Antenna":
+        case "ModuleDataTransmitter":
           ModuleDataTransmitter x = part.FindModuleImplementing<ModuleDataTransmitter>();
           new AntennaEC(x, extra_Cost, extra_Deploy, antennaPower).UI_Update(b);
           break;
@@ -151,7 +149,7 @@ namespace KERBALISM
     {
       switch (type)
       {
-        case "Antenna":
+        case "ModuleDataTransmitter":
           ModuleDataTransmitter x = part.FindModuleImplementing<ModuleDataTransmitter>();
           new AntennaEC(x, extra_Cost, extra_Deploy, antennaPower).FixCommNetAntenna(b);
           break;

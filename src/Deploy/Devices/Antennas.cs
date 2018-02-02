@@ -124,6 +124,7 @@ namespace KERBALISM
         {
           if (stockAnim != null)
           {
+            Lib.Debug("Activing buttons for '{0}' antenna", transmitter.part.partInfo.title);
             if (stockAnim.deployState == ModuleDeployablePart.DeployState.EXTENDED)
             {
               stockAnim.Events["Retract"].active = true;
@@ -145,6 +146,7 @@ namespace KERBALISM
         {
           if (stockAnim != null)
           {
+            Lib.Debug("Desactiving buttons");
             // Don't allow extending/retracting when has no ec
             stockAnim.Events["Retract"].active = false;
             stockAnim.Events["Extend"].active = false;
@@ -161,23 +163,34 @@ namespace KERBALISM
         // Save antennaPower
         antennaPower = (antennaPower != transmitter.antennaPower && transmitter.antennaPower > 0 ? transmitter.antennaPower : antennaPower);
         right = hasEnergy ? antennaPower : 0;
-
         if (stockAnim != null)
         {
+          ToggleActions(stockAnim, hasEnergy);
+
           if (stockAnim.deployState == ModuleDeployablePart.DeployState.EXTENDED)
           {
             // Recover antennaPower only if antenna is Extended
+            Lib.Debug("Setting antenna '{0}' power: {1}",transmitter.part.partInfo.title, right);
             transmitter.antennaPower = right;
           }
           else
           {
-            if (Settings.ExtendedAntenna) transmitter.antennaPower = right;
-            else transmitter.antennaPower = 0;
+            if (Settings.ExtendedAntenna)
+            {
+              Lib.Debug("Setting antenna '{0}' power: {1}", transmitter.part.partInfo.title, right);
+              transmitter.antennaPower = right;
+            }
+            else
+            {
+              Lib.Debug("Setting antenna '{0}' power: {1}", transmitter.part.partInfo.title, 0);
+              transmitter.antennaPower = 0;
+            }
           }
         }
         else
         {
           // Recover antennaPower for fixed antenna
+          Lib.Debug("Setting antenna '{0}' power: {1}", transmitter.part.partInfo.title, right);
           transmitter.antennaPower = right;
         }
       }
